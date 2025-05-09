@@ -120,20 +120,6 @@
     },
     {
       "parameters": {
-        "operation": "toJson",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.convertToFile",
-      "typeVersion": 1.1,
-      "position": [
-        -460,
-        420
-      ],
-      "id": "d6514e2c-a97d-4894-baf1-21bbef49c455",
-      "name": "Convert to File1"
-    },
-    {
-      "parameters": {
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
@@ -146,8 +132,8 @@
       "name": "Embeddings OpenAI",
       "credentials": {
         "openAiApi": {
-          "id": "MaB9mPeYFJjZXF9o",
-          "name": "n8n free OpenAI API credits"
+          "id": "ZP5vKp9O8kvLOyxz",
+          "name": "OpenAi account"
         }
       }
     },
@@ -617,9 +603,9 @@
       "main": [
         [
           {
-            "node": "Convert to File1",
+            "node": "Merge1",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -853,17 +839,6 @@
         ]
       ]
     },
-    "Convert to File1": {
-      "main": [
-        [
-          {
-            "node": "Merge1",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
     "Merge1": {
       "main": [
         [
@@ -907,7 +882,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ac26bdc8-3c62-4a5e-a794-1496e2fb4eab",
+  "versionId": "8372ccfe-0c19-4c60-a33e-e5c7b29f27f4",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "1f7d48ba6b0afd5118408cdc828e329f7610fcc04c4c4e38ab671ab4e6d41afe"
