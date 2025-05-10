@@ -44,8 +44,8 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
       "typeVersion": 1.1,
       "position": [
-        -880,
-        440
+        -800,
+        360
       ],
       "id": "1c2b7708-2bab-4a47-8cf2-8720f492c816",
       "name": "Pinecone Vector Store2",
@@ -111,7 +111,7 @@
       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
       "typeVersion": 1.2,
       "position": [
-        -860,
+        -900,
         1280
       ],
       "id": "3cf606d6-406a-4f17-a8b8-13ff4b6bf482",
@@ -350,8 +350,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
       "position": [
-        680,
-        300
+        1480,
+        200
       ],
       "id": "b47f778d-9f87-4438-9e7d-3d9c9d4cc71d",
       "name": "Merge1"
@@ -405,8 +405,8 @@
       "type": "n8n-nodes-base.convertToFile",
       "typeVersion": 1.1,
       "position": [
-        920,
-        300
+        1680,
+        200
       ],
       "id": "8f70bfb2-1c64-4bb4-8874-37960f415ed5",
       "name": "Image final output"
@@ -601,54 +601,6 @@
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        680,
-        560
-      ],
-      "id": "d5dd2426-5bbc-4e78-800b-d926a0d60ed6",
-      "name": "Gmail",
-      "webhookId": "fe90d093-dcfa-4ca2-935c-e3fad628cca4",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "f0359ca9-ad0f-4921-92da-f59a271b8e7b",
-              "leftValue": "={{ $json.bucket }}",
-              "rightValue": "high_confidence",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        260,
-        440
-      ],
-      "id": "6f74720e-7182-4b4f-a640-e4365f8526fb",
-      "name": "If score less than 70% occur human confirm"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
         "options": {}
@@ -657,7 +609,7 @@
       "typeVersion": 3.1,
       "position": [
         -400,
-        440
+        420
       ],
       "id": "569fa927-1802-4d8f-a067-9a8887a6be0f",
       "name": "Merge2"
@@ -665,30 +617,16 @@
     {
       "parameters": {
         "language": "python",
-        "pythonCode": "output_items = []\n\nfor idx, it in enumerate(items):\n    data = it.get('json', {})\n\n    # grab quantity (as string) and turn it into an int\n    qty_str = data.get(\"數量\", None)\n    try:\n        quantity = int(qty_str) if qty_str is not None else None\n    except ValueError:\n        quantity = qty_str\n\n    output_items.append({\n        \"product_id\": f\"P{idx+1:03d}\",                    # or data.get(\"product_id\")\n        \"matched_name\": data[\"document\"][\"pageContent\"],  # Pinecone match\n        \"original_input\": data[\"item\"],                   # your original query\n        \"quantity\": quantity,\n        \"match_score\": float(data[\"score\"]),\n    })\n\n# return a single JSON object with an \"items\" array\nreturn [\n    {\n        \"json\": {\n            \"items\": output_items\n        }\n    }\n]\n"
+        "pythonCode": "output_items = []\n\nfor idx, it in enumerate(items):\n    data = it.get('json', {})\n\n    # grab quantity (as string) and turn it into an int\n    qty_str = data.get(\"數量\", None)\n    try:\n        quantity = int(qty_str) if qty_str is not None else None\n    except ValueError:\n        quantity = qty_str\n\n    output_items.append({\n        \"matched_name\": data[\"document\"][\"pageContent\"],  # Pinecone match\n        \"original_input\": data[\"item\"],                   # your original query\n        \"quantity\": quantity,\n        \"match_score\": float(data[\"score\"]),\n    })\n\n# return a single JSON object with an \"items\" array\nreturn output_items\n# return{\n#         \"json\": {\n#             \"items\": output_items\n#         }\n#     }\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -160,
-        440
+        -200,
+        420
       ],
       "id": "22a0a36c-8540-45e8-9eb4-996657ca7b87",
       "name": "merge output data with quantity"
-    },
-    {
-      "parameters": {
-        "language": "python",
-        "pythonCode": "# n8n Python Code node\n\n# 1) grab the incoming array-of-items\nall_items = items[0][\"json\"][\"items\"]\n\n# 2) split into high and low buckets\nhigh_score = [i for i in all_items if i[\"match_score\"] >= 0.7]\nlow_score  = [i for i in all_items if i[\"match_score\"] <  0.7]\n\n# 3) return two separate output items\nreturn [\n    {\"json\": {\"bucket\": \"high_confidence\", \"items\": high_score}},\n    {\"json\": {\"bucket\": \"low_confidence\",  \"items\": low_score }},\n]\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        60,
-        440
-      ],
-      "id": "40631251-9c1a-45a3-8c9a-539c34d1c472",
-      "name": "split items with match score 70%"
     },
     {
       "parameters": {
@@ -717,324 +655,252 @@
       ],
       "id": "898ad666-1625-4de0-8960-9d4d2e5995f5",
       "name": "extract product fields"
-    }
-  ],
-  "pinData": {
-    "Pinecone Vector Store2": [
-      {
-        "json": {
-          "document": {
-            "pageContent": "紅捲 斤"
-          },
-          "score": 0.758362889
-        }
+    },
+    {
+      "parameters": {
+        "options": {}
       },
-      {
-        "json": {
-          "document": {
-            "pageContent": "青辣椒 斤"
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        340,
+        740
+      ],
+      "id": "d5dd2426-5bbc-4e78-800b-d926a0d60ed6",
+      "name": "Send to human",
+      "webhookId": "fe90d093-dcfa-4ca2-935c-e3fad628cca4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
           },
-          "score": 0.828150809
-        }
+          "conditions": [
+            {
+              "id": "f0359ca9-ad0f-4921-92da-f59a271b8e7b",
+              "leftValue": "={{ $json.match_score }}",
+              "rightValue": 0.7,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      {
-        "json": {
-          "document": {
-            "pageContent": "蒜泥 斤"
-          },
-          "score": 0.999954164
-        }
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        120,
+        540
+      ],
+      "id": "2cf0321e-825d-4278-b950-4f79c0a2a6dd",
+      "name": "If score less than 70% occur human confirm1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W56Q7AwRGwX6SL_khgcTFAXi41Yw-y6jx7J4mwaFIVk",
+          "mode": "list",
+          "cachedResultName": "客戶訂單資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W56Q7AwRGwX6SL_khgcTFAXi41Yw-y6jx7J4mwaFIVk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 610408220,
+          "mode": "list",
+          "cachedResultName": "COPR222025033000000320250330000",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W56Q7AwRGwX6SL_khgcTFAXi41Yw-y6jx7J4mwaFIVk/edit#gid=610408220"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=品名",
+              "lookupValue": "={{ $json.matched_name.split(' ')[0]  }}"
+            },
+            {
+              "lookupColumn": "單位",
+              "lookupValue": "={{ $json.matched_name.split(' ')[1]  }}"
+            }
+          ]
+        },
+        "options": {}
       },
-      {
-        "json": {
-          "document": {
-            "pageContent": "山東大白菜 斤"
-          },
-          "score": 0.999965668
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "芋頭去皮 斤"
-          },
-          "score": 0.824470937
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "粿仔條 包"
-          },
-          "score": 0.820025682
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "洋地瓜(刈薯) 袋"
-          },
-          "score": 0.744564176
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "芹菜/中芹 斤"
-          },
-          "score": 0.617342889
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "娃娃菜 包"
-          },
-          "score": 0.999958158
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "青花菜\\花椰菜\\綠花椰菜 斤"
-          },
-          "score": 0.858074427
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "豆干 斤"
-          },
-          "score": 0.704980314
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "紅捲 斤"
-          },
-          "score": 0.758364737
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "高麗菜 KG"
-          },
-          "score": 0.609069467
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "豆皮 斤"
-          },
-          "score": 0.555415571
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "芹菜/中芹 斤"
-          },
-          "score": 0.672661304
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "鴨血 塊"
-          },
-          "score": 0.999960184
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "日本山藥 斤"
-          },
-          "score": 0.99996835
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "美生菜/結球萵苣 KG"
-          },
-          "score": 0.738590658
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "芝麻湯圓桂冠 盒"
-          },
-          "score": 0.680931866
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "碎菜脯/蘿蔔乾 斤"
-          },
-          "score": 0.737945437
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "青江菜 斤"
-          },
-          "score": 0.999949694
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "薑絲/子薑絲 斤"
-          },
-          "score": 0.914207
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "蒜苗 斤"
-          },
-          "score": 0.999950707
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "紅蔥頭碎 斤"
-          },
-          "score": 0.511146665
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "空心菜/蕹菜 斤"
-          },
-          "score": 0.889710665
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "紅捲 斤"
-          },
-          "score": 0.688531816
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "粉肝(真空包) 斤"
-          },
-          "score": 0.720802248
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "黃豆芽 斤"
-          },
-          "score": 0.474802017
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "青辣椒 斤"
-          },
-          "score": 0.910056
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "紅椒/甜紅椒/紅甜椒 斤"
-          },
-          "score": 0.896358132
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "黃豆芽 斤"
-          },
-          "score": 0.793189645
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "蒜仁去頭 斤"
-          },
-          "score": 0.891456246
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "紫山藥 斤"
-          },
-          "score": 0.92793256
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "皮蛋 粒"
-          },
-          "score": 0.999945521
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "沙拉\\美乃滋\\沙拉醬 包"
-          },
-          "score": 0.806545138
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "小黃瓜/花胡瓜 斤"
-          },
-          "score": 0.932634652
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "薑絲/子薑絲 斤"
-          },
-          "score": 0.914207
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "白花菜\\白花椰菜 斤"
-          },
-          "score": 0.646902382
-        }
-      },
-      {
-        "json": {
-          "document": {
-            "pageContent": "豆干切片 斤"
-          },
-          "score": 0.908225775
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        340,
+        520
+      ],
+      "id": "7f15ea45-125e-4372-8546-96f4ab0d56c6",
+      "name": "Google Sheets2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VfEhTN1vBoqFlxvl",
+          "name": "Google Sheets account"
         }
       }
-    ]
-  },
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "matched_name",
+              "field2": "matched_name"
+            }
+          ]
+        },
+        "options": {
+          "fuzzyCompare": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        660
+      ],
+      "id": "6d9919b3-b7b9-4f33-91e8-871ee9c1deb5",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "original_input",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1080,
+        320
+      ],
+      "id": "0da4eaae-c46e-4a39-87f5-975a1a25db38",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "check_product=[]\nseen_product=[]\n\nfor item in items:\n  data = item[\"json\"]\n  if (data.get(\"品號\"),data.get(\"單位\")) not in check_product :\n    seen_product.append(item)\n    check_product.append((data.get(\"品號\"),data.get(\"單位\")))\n\nreturn seen_product\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        520
+      ],
+      "id": "58e5b983-3c78-4161-854f-2b656b213b06",
+      "name": "remove duplicates"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f4125e3-38fa-4087-9f88-37896480f56a",
+              "name": "product_id",
+              "value": "={{ $json[\"品號\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "87010d3e-1122-4bbd-ae7d-890524d91a3c",
+              "name": "matched_name",
+              "value": "={{ $json[\"品名\"] }} {{ $json[\"單位\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "090c47d0-e31b-4b79-880a-7114ea24c8d3",
+              "name": "品名",
+              "value": "={{ $json[\"品名\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "dd3b1f4c-0578-4791-97e0-38dd9147ebb5",
+              "name": "unit",
+              "value": "={{ $json[\"單位\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        520
+      ],
+      "id": "3a810b03-d734-4618-8f04-a99630dd4427",
+      "name": "reconstruct file structure"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98b95b58-22b8-4071-bd22-ec14947b5356",
+              "name": "product_id",
+              "value": "={{ $json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "9043618d-6ec3-4183-abcc-e22d780e4267",
+              "name": "matched_name",
+              "value": "={{ $json.matched_name }}",
+              "type": "string"
+            },
+            {
+              "id": "1599e09f-09f8-46d4-b117-4c80229579cf",
+              "name": "original_input",
+              "value": "={{ $json.original_input }}",
+              "type": "string"
+            },
+            {
+              "id": "080e1f22-f2db-4600-966d-997afa64e020",
+              "name": "match_score",
+              "value": "={{ $json.match_score }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        920,
+        480
+      ],
+      "id": "cd0d8195-410d-465f-9d05-1313d352fed2",
+      "name": "reconstruct file structure1"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "clean_items = [item[\"json\"] for item in items]\nreturn  { \"items\": clean_items } \n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        320
+      ],
+      "id": "8028136a-1759-49a2-9e94-b5cad7e5cdcf",
+      "name": "into items list"
+    }
+  ],
+  "pinData": {},
   "connections": {
     "Default Data Loader2": {
       "ai_document": [
@@ -1362,24 +1228,6 @@
         ]
       ]
     },
-    "If score less than 70% occur human confirm": {
-      "main": [
-        [
-          {
-            "node": "Merge1",
-            "type": "main",
-            "index": 1
-          }
-        ],
-        [
-          {
-            "node": "Gmail",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Image final output": {
       "main": [
         []
@@ -1400,20 +1248,14 @@
       "main": [
         [
           {
-            "node": "split items with match score 70%",
+            "node": "If score less than 70% occur human confirm1",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "split items with match score 70%": {
-      "main": [
-        [
+          },
           {
-            "node": "If score less than 70% occur human confirm",
+            "node": "Merge3",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -1444,13 +1286,113 @@
           }
         ]
       ]
+    },
+    "If score less than 70% occur human confirm1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Send to human",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "remove duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "reconstruct file structure1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "into items list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remove duplicates": {
+      "main": [
+        [
+          {
+            "node": "reconstruct file structure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reconstruct file structure": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reconstruct file structure1": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "into items list": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "66215601-f023-4bad-95ce-19047466995a",
+  "versionId": "9fb67c8e-b1eb-4487-a36c-c0894e8cedd2",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "1f7d48ba6b0afd5118408cdc828e329f7610fcc04c4c4e38ab671ab4e6d41afe"
