@@ -363,20 +363,6 @@
     },
     {
       "parameters": {
-        "operation": "toJson",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.convertToFile",
-      "typeVersion": 1.1,
-      "position": [
-        2440,
-        -20
-      ],
-      "id": "8f70bfb2-1c64-4bb4-8874-37960f415ed5",
-      "name": "Image final output"
-    },
-    {
-      "parameters": {
         "language": "python",
         "pythonCode": "# n8n Python Code 節點\n\n# items 變數由 n8n 自動提供，包含前一個節點的所有輸入資料\n# 每一項 item 的結構為 {'json': {...}, 'binary': {...}（如有）}\n\n# 1. 擷取所有「單位」欄位的值\nunits = []\nfor item in items:\n    # 使用 get() 防止 key 不存在造成錯誤\n    unit = item['json'].get('單位')\n    # 只把非空值加入列表\n    if unit is not None:\n        units.append(unit)\n\n# 2. 去重\nunique_units = list(set(units))\n\n# 3. 回傳結果\n#    這裡我們把去重後的列表放在 json.uniqueUnits 裡\nreturn [\n    {\n        'json': {\n            'uniqueUnits': unique_units\n        }\n    }\n]\n"
       },
@@ -1104,6 +1090,77 @@
       ],
       "id": "53b5570e-d35c-466d-93d7-936294f54d60",
       "name": "reconstruct file structure to final format1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5b041c11-42bf-4e79-941d-132c2f68c723",
+              "leftValue": "={{ $json.items }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2360,
+        -20
+      ],
+      "id": "8ec5dbac-e42d-4609-abad-e57a23283097",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2580,
+        -120
+      ],
+      "id": "8f70bfb2-1c64-4bb4-8874-37960f415ed5",
+      "name": "pdf/Image final output"
+    },
+    {
+      "parameters": {
+        "sendTo": "jameschen112001@gmail.com",
+        "subject": "Human check",
+        "message": "=no match",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2580,
+        80
+      ],
+      "id": "e8a3ce27-b860-422f-b1cb-acc468650574",
+      "name": "Send empty item list to human",
+      "webhookId": "fe90d093-dcfa-4ca2-935c-e3fad628cca4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JAbTYr45WxtYcIUQ",
+          "name": "Gmail account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -1350,11 +1407,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Image final output": {
-      "main": [
-        []
       ]
     },
     "Extracts OCR text": {
@@ -1672,11 +1724,34 @@
       "main": [
         [
           {
-            "node": "Image final output",
+            "node": "If",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "pdf/Image final output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send empty item list to human",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pdf/Image final output": {
+      "main": [
+        []
       ]
     }
   },
@@ -1684,7 +1759,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b160f854-dac4-4cad-8ccf-22abec042216",
+  "versionId": "6d65f834-c432-490b-8739-efc0592c2ec9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "1f7d48ba6b0afd5118408cdc828e329f7610fcc04c4c4e38ab671ab4e6d41afe"
